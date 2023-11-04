@@ -22,6 +22,11 @@ dt = 0
 font = pygame.font.SysFont(pygame.font.get_default_font(), 40)
 title = pygame.font.SysFont('verdana', 150).render('Pong-Inertial', False, (250, 220, 210))
 
+# Adding the musics tracks
+music = pygame.mixer.music
+music.load("MultiMedia/katyusha_8_bit.mp3")
+music.play()
+
 
 class Player():
     def __init__(self,color, x, y, width, height, up, down, left, right, radius=20):
@@ -88,18 +93,24 @@ class Button():
         screen.blit(self.surface, self.rect)
         
  
-# Start function
+# Starts function
 def start():
     run_game()
     
+def leave_game():
+    music.load("MultiMedia/katyusha_8_bit.mp3")
+    music.play()
+    run_intro() 
+
 # Opens intro page
 def menu():
     run_intro()    
     
+# Opens options
 def options():
     run_options()
     
-# Exit function
+# Exits function
 def exit():
     pygame.quit()
     sys.exit()
@@ -112,12 +123,14 @@ disk = pygame.image.load("MultiMedia/TableTop.png").convert_alpha()
 disk = pygame.transform.scale(disk, (600, 600))
 
 def run_game(screen=screen, clock=clock, running=running, dt=dt):
-    # making players
+    music.stop()
+    music.load("MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
+    music.play()
     player1 = Player(PLAYER1_COLOR, WIDTH / 3, HEIGHT / 2, 20, 50, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT)
     player2 = Player(PLAYER2_COLOR, WIDTH *2/ 3, HEIGHT / 2, 30, 10, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d)
     
     # making buttons
-    menuButton = Button(0, 0, 100, 50, menu, "Menu", False)
+    menuButton = Button(0, 0, 100, 50, leave_game, "Menu", False)
     
     while running:
         # poll for events
@@ -173,9 +186,9 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
         dt = clock.tick(FPS) / 1000
         
         
-def run_intro(screen=screen):
+def run_intro():
     intro = True
-        
+    
     # Making the buttons
     startButton = Button(WIDTH/2 - 100, HEIGHT*(1/3+2/10), 200, 50, start, "Start")
     optionButton = Button(WIDTH/2 - 100, HEIGHT*(1/3 + 3/10), 200, 50, options, "Options")
@@ -196,7 +209,7 @@ def run_intro(screen=screen):
         clock.tick(FPS)
                 
                 
-def run_options(screen=screen):
+def run_options():
     options = True
     
     # making buttons
@@ -212,7 +225,7 @@ def run_options(screen=screen):
         pygame.display.flip()
         clock.tick(FPS)
         
-    
+
 
 run_intro()
 pygame.quit()
