@@ -96,10 +96,14 @@ def start():
 def menu():
     run_intro()    
     
+def options():
+    run_options()
+    
 # Exit function
 def exit():
     pygame.quit()
     sys.exit()
+    
     
 
 def run_game(screen=screen, clock=clock, running=running, dt=dt):
@@ -109,7 +113,6 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
     
     # making buttons
     menuButton = Button(0, 0, 100, 50, menu, "Menu", False)
-    restartButton = Button(screen.get_width()/2-50, 0, 100, 50, start, "Restart", False)
     
     while running:
         # poll for events
@@ -123,7 +126,6 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
         
         # updates buttons
         menuButton.process()
-        restartButton.process()
 
         pygame.draw.rect(screen, player1.color, (player1.pos.x, player1.pos.y, player1.width, player1.height))
         pygame.draw.rect(screen, player2.color, (player2.pos.x, player2.pos.y, player2.width, player2.height))
@@ -168,8 +170,9 @@ def run_intro(screen=screen):
     intro = True
         
     # Making the buttons
-    startButton = Button(screen.get_width()/2 - 100/2, screen.get_height()/3 - 50/2, 100, 50, start, "Start")
-    exitButton = Button(screen.get_width()/2 - 100/2, screen.get_height()*2/3 -50/2, 100, 50, exit, "Exit")
+    startButton = Button(screen.get_width()/2 - 100, screen.get_height()/3 - 25, 200, 50, start, "Start")
+    optionButton = Button(screen.get_width()/2 - 100, screen.get_height()/2 - 25, 200, 50, options, "Options")
+    exitButton = Button(screen.get_width()/2 - 100, screen.get_height()*2/3 -25, 200, 50, exit, "Exit")
         
     while intro:
         for event in pygame.event.get():
@@ -178,17 +181,24 @@ def run_intro(screen=screen):
                 sys.exit()
         screen.fill(SURFACE_COLOR)
         startButton.process()
+        optionButton.process()
         exitButton.process()
         
         pygame.display.flip()
         clock.tick(FPS)
-        # mouse = pygame.mouse.get_pos()
-        # for event in pygame.event.get():
-        #     if event.type() == pygame.QUIT:
-        #         pygame.quit()
-        #     elif event.type() == pygame.MOUSEBUTTONDOWN:
-        #         pass
                 
+                
+def run_options(screen=screen):
+    options = True
+    
+    # making buttons
+    menuButton = Button(0, 0, 100, 50, menu, "Menu", False)
+    
+    while options:
+        menuButton.process()
+        
+    
+    
 
 run_intro()
 run_game()
