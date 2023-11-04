@@ -4,8 +4,8 @@ import sys
 
 
 # Global Variables
-SURFACE_COLOR = (50, 50, 50)
-WIDTH = 800
+SURFACE_COLOR = (50, 50, 60)
+WIDTH = 1200
 HEIGHT = 800
 PLAYER1_COLOR = (255, 50, 50)
 PLAYER2_COLOR = (50, 255, 50)
@@ -14,12 +14,13 @@ FPS = 60
 
 # pygame setup
 pygame.init()
+pygame.display.set_caption("Pong-Inertial Game")
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 running = True
 dt = 0
 font = pygame.font.SysFont(pygame.font.get_default_font(), 40)
-
+title = pygame.font.SysFont('verdana', 150).render('Pong-Inertial', False, (250, 220, 210))
 
 
 class Player():
@@ -60,16 +61,16 @@ class Button():
         if inMenu:
             self.textSurf = font.render(text,True, (40, 40, 40))
             self.colors = {
-                'normal': (200,200,200),
-                'hover': (150, 150, 150),
-                'pressed': (230, 230, 230),
+                'normal': (196,164,132),
+                'hover': (156, 124, 92),
+                'pressed': (220, 220, 220),
             }
         else:
             self.textSurf = font.render(text,True, (200, 200, 200))
             self.colors = {
                 'normal': SURFACE_COLOR,
                 'hover' : SURFACE_COLOR,
-                'pressed': (100,100,100)
+                'pressed': (130,130,130)
             }
         
     def process(self):
@@ -87,7 +88,6 @@ class Button():
         screen.blit(self.surface, self.rect)
         
  
-
 # Start function
 def start():
     run_game()
@@ -104,12 +104,17 @@ def exit():
     pygame.quit()
     sys.exit()
     
+center_width = screen.get_width()/2
+center_height = screen.get_height()/2
     
+    
+disk = pygame.image.load("MultiMedia/TableTop.png").convert_alpha()
+disk = pygame.transform.scale(disk, (600, 600))
 
 def run_game(screen=screen, clock=clock, running=running, dt=dt):
     # making players
-    player1 = Player(PLAYER1_COLOR, screen.get_width() / 3, screen.get_height() / 2, 20, 50, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT)
-    player2 = Player(PLAYER2_COLOR, screen.get_width() *2/ 3, screen.get_height() / 2, 30, 10, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d)
+    player1 = Player(PLAYER1_COLOR, WIDTH / 3, HEIGHT / 2, 20, 50, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT)
+    player2 = Player(PLAYER2_COLOR, WIDTH *2/ 3, HEIGHT / 2, 30, 10, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d)
     
     # making buttons
     menuButton = Button(0, 0, 100, 50, menu, "Menu", False)
@@ -119,10 +124,11 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
         # pygame.QUIT event means the user clicked X to close your window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
 
         # fill the screen with a color to wipe away anything from last frame
         screen.fill(SURFACE_COLOR)
+        screen.blit(disk, (WIDTH/2-300,HEIGHT/2-300))
         
         # updates buttons
         menuButton.process()
@@ -166,13 +172,14 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
         # independent physics.
         dt = clock.tick(FPS) / 1000
         
+        
 def run_intro(screen=screen):
     intro = True
         
     # Making the buttons
-    startButton = Button(screen.get_width()/2 - 100, screen.get_height()/3 - 25, 200, 50, start, "Start")
-    optionButton = Button(screen.get_width()/2 - 100, screen.get_height()/2 - 25, 200, 50, options, "Options")
-    exitButton = Button(screen.get_width()/2 - 100, screen.get_height()*2/3 -25, 200, 50, exit, "Exit")
+    startButton = Button(WIDTH/2 - 100, HEIGHT*(1/3+2/10), 200, 50, start, "Start")
+    optionButton = Button(WIDTH/2 - 100, HEIGHT*(1/3 + 3/10), 200, 50, options, "Options")
+    exitButton = Button(WIDTH/2 - 100, HEIGHT*(1/3 + 4/10), 200, 50, exit, "Exit")
         
     while intro:
         for event in pygame.event.get():
@@ -180,6 +187,7 @@ def run_intro(screen=screen):
                 pygame.quit()
                 sys.exit()
         screen.fill(SURFACE_COLOR)
+        screen.blit(title, (WIDTH/2 - title.get_width()/2, HEIGHT*(1/8)))
         startButton.process()
         optionButton.process()
         exitButton.process()
@@ -195,12 +203,17 @@ def run_options(screen=screen):
     menuButton = Button(0, 0, 100, 50, menu, "Menu", False)
     
     while options:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        screen.fill(SURFACE_COLOR)
         menuButton.process()
+        pygame.display.flip()
+        clock.tick(FPS)
         
-    
     
 
 run_intro()
-run_game()
 pygame.quit()
 sys.exit()
