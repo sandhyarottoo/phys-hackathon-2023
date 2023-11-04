@@ -25,6 +25,32 @@ music.play()
 P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
 P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player1.score}", False, player2.color)
 
+
+# Starts function
+def start():
+    run_game()
+    
+# returns to menu / intro page
+def leave_game():
+    music.load("MultiMedia/katyusha_8_bit.mp3")
+    music.play()
+    run_intro() 
+
+# Opens intro page
+def menu():
+    run_intro()    
+    
+# Opens options
+def options():
+    run_options()
+    
+# Exits function
+def exit():
+    pygame.quit()
+    sys.exit()
+
+
+
 # To run the menu / intro
 def run_intro():
     intro = True
