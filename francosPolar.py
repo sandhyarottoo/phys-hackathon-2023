@@ -51,13 +51,14 @@ class PointCharge(pygame.sprite.Sprite):
         super().__init__()
         self.pos = pos
         self.strength = strength
+        self.radius = 15
 
-        self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, "blue", (15, 15), 15)
+        self.image = pygame.Surface((2*self.radius, 2*self.radius), pygame.SRCALPHA)
+        pygame.draw.circle(self.image, pygame.Color("blue"), (self.radius, self.radius), self.radius)
         self.rect = self.image.get_rect()
 
         pos_cartesian = polar_to_cartesian(self.pos)
-        self.rect.center = (pos_cartesian.x, pos_cartesian.y)
+        self.rect.center = (pos_cartesian.x + width/2, pos_cartesian.y + height/2)
 
     def computeForce(self, other_pos):
 
@@ -114,8 +115,6 @@ class CircleSprite(pygame.sprite.Sprite):
 # Initialize Pygame
 pygame.init()
 clock = pygame.time.Clock()
-
-# Create a window
 screen = pygame.display.set_mode((790,790))
 pygame.display.set_caption("Circle Sprite")
 
@@ -134,7 +133,7 @@ circles = pygame.sprite.Group()
 circles.add(circle)
 
 # create a point charge
-charge = PointCharge(pygame.Vector2(-100, 0), 20)
+charge = PointCharge(pygame.Vector2(-100, 0), 100000)
 charges = pygame.sprite.Group()
 charges.add(charge)
 
@@ -152,9 +151,10 @@ while running:
     # Clear the screen
     screen.fill(BACKGROUND_COLOR)
 
-    circles.update(charges) 
-    circles.draw(screen)
+    circles.update(charges)
     charges.draw(screen)
+    circles.draw(screen)
+    
     
 
    # Update the display
