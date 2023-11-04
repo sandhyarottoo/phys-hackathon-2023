@@ -1,0 +1,19 @@
+## Powerups
+Bouncy paddles (add spring constant into the paddles)
+
+Accelerating angular velocity question mark?
+
+
+## Logistics
+Both players can go around the circumfrance, put one slightly radially 
+further than the other so that they don't collide
+
+Constrain them to a circle each
+
+Sound effects?
+
+Start screen with option to change the parameters
+
+## Harder game play
+Adding potential (poles)
+
