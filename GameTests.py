@@ -10,6 +10,8 @@ HEIGHT = 800
 PLAYER1_COLOR = (255, 50, 50)
 PLAYER2_COLOR = (50, 255, 50)
 FPS = 60
+PLAYER1_POS = WIDTH / 3, HEIGHT / 2
+PLAYER2_POS = WIDTH *2/ 3, HEIGHT / 2
 
 
 # pygame setup
@@ -19,7 +21,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 running = True
 dt = 0
-font = pygame.font.SysFont(pygame.font.get_default_font(), 40)
+font = pygame.font.SysFont('arial', 40)
 title = pygame.font.SysFont('verdana', 150).render('Pong-Inertial', False, (250, 220, 210))
 
 # Adding the musics tracks
@@ -39,6 +41,7 @@ class Player():
         self.width = width
         self.height = height
         self.color = color
+        self.score = 0
         
     def boundary_check(self, width=screen.get_width(), height=screen.get_height()):
         if self.pos.x + self.radius >= width:
@@ -92,6 +95,14 @@ class Button():
                                                 self.rect.height/2 - self.textSurf.get_rect().height/2])
         screen.blit(self.surface, self.rect)
         
+        
+# Players
+player1 = Player(PLAYER1_COLOR, PLAYER1_POS[0], PLAYER1_POS[1], 20, 50, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT)
+player2 = Player(PLAYER2_COLOR, PLAYER2_POS[0], PLAYER2_POS[1], 30, 10, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d)
+
+# Scoreboard
+P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
+P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player1.score}", False, player2.color)
  
 # Starts function
 def start():
@@ -126,11 +137,12 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
     music.stop()
     music.load("MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
     music.play()
-    player1 = Player(PLAYER1_COLOR, WIDTH / 3, HEIGHT / 2, 20, 50, pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT)
-    player2 = Player(PLAYER2_COLOR, WIDTH *2/ 3, HEIGHT / 2, 30, 10, pygame.K_w, pygame.K_s, pygame.K_a, pygame.K_d)
+    
+    player1.pos = pygame.Vector2(PLAYER1_POS)
+    player2.pos = pygame.Vector2(PLAYER2_POS)
     
     # making buttons
-    menuButton = Button(0, 0, 100, 50, leave_game, "Menu", False)
+    menuButton = Button(20, 10, 100, 50, leave_game, "Menu", False)
     
     while running:
         # poll for events
@@ -142,6 +154,9 @@ def run_game(screen=screen, clock=clock, running=running, dt=dt):
         # fill the screen with a color to wipe away anything from last frame
         screen.fill(SURFACE_COLOR)
         screen.blit(disk, (WIDTH/2-300,HEIGHT/2-300))
+        
+        screen.blit(P1Score, (WIDTH/2-P1Score.get_width()-40, 20))
+        screen.blit(P2Score, (WIDTH/2+40, 20))
         
         # updates buttons
         menuButton.process()
