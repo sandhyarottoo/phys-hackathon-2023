@@ -7,6 +7,7 @@ Created on Sat Nov  4 14:05:22 2023
 """
 
 import pygame
+import numpy as np
 import sys
 
 
@@ -80,6 +81,7 @@ def update_position(pos_polar,vel_polar,acc_polar):
 
 # Initialize Pygame
 pygame.init()
+clock = pygame.time.Clock()
 
 # Create a window
 screen = pygame.display.set_mode((500,500))
@@ -133,10 +135,9 @@ while running:
     all_sprites.update()
     all_sprites.draw(screen)
 
-    
-
    # Update the display
     pygame.display.flip()
+    dt = clock.tick(60) / 1000
 
 # Quit Pygame
 pygame.quit()
