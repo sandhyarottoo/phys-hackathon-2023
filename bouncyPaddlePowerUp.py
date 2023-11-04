@@ -22,7 +22,7 @@ def main():
     # pygame setup
     pygame.init()
     width = 1280
-    height = 820
+    height = 780
     screen = pygame.display.set_mode((width, height))
     clock = pygame.time.Clock()
     running = True
@@ -37,9 +37,15 @@ def main():
 
     gravity = False
 
-    ground_height = 50
-    ground_boundary = height - ground_height
-    ground = pygame.Rect(0, ground_boundary, width, ground_height)
+    ground_og_height = 50
+    ground_boundary = height - ground_og_height
+    ground = pygame.Rect(0, ground_boundary, width, ground_og_height)
+    ground_disp = 0
+    ground_vel = 0
+    #setting ground spring qualities
+    k = 100 #spring const
+    launch_factor = 1.05
+    collision = False
 
     while running:
         # poll for events
@@ -62,9 +68,11 @@ def main():
         pygame.draw.rect(screen, "brown", ground)
 
         forces = []
-        
+
         if gravity:
             
+            # handle ball collisions
+
             if (player_pos.x >= width - radius):
                 player_pos.x = width - radius
                 player_vel.x *= -1
@@ -72,10 +80,29 @@ def main():
                 player_pos.x = radius
                 player_vel.x *= -1
 
-            if player_pos.y >= ground_boundary - radius:
-                player_pos.y = ground_boundary - radius
-                
-                player_vel.y *= -1
+            #bouncy ground
+
+            if (collision == False) and (player_pos.y >= ground_boundary - radius):
+                player_pos.y = ground.y - radius
+                collision = True
+                ground_vel = 150
+            
+            if collision:
+                player_pos.y = ground.y - radius
+                ground_disp += ground_vel*dt
+                ground_vel += -k*ground_disp*dt
+                #ground_vel *= d
+                ground.y = ground_boundary + ground_disp
+
+                if ground_disp <= 0:
+                    ground.y = ground_boundary
+                    player_pos.y = ground_boundary - radius - 1
+                    player_vel.y *= -launch_factor
+                    ground_vel = 0
+                    ground_disp = 0
+                    collision = False
+            
+            #update ball motion
 
             forces.append(gravForce(player_mass))
             player_pos += player_vel*dt
@@ -84,6 +111,8 @@ def main():
             player_acc.x = 0
             player_acc.y = 0
             player_acc = applyForce(player_acc, player_mass, forces)
+
+            #update ground motion if applicable
 
 
         else:
