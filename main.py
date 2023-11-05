@@ -13,6 +13,10 @@ import os
 
 ########## CONSTANTS ##########
 
+# Folder path (to 'phys-hackathon-2023/')
+# path = '/Users/sandhya/phys-hackathon-2023/'
+path = input("write the path to the 'phys-hackathon-2023' folder here (press enter if None):")
+
 # Constants
 WIDTH = 1200
 HEIGHT = 800
@@ -296,7 +300,7 @@ title = pygame.font.SysFont('verdana', 150).render('Pong-Inertial', False, (250,
 
 # Adding the musics tracks
 music = pygame.mixer.music
-music.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/katyusha_8_bit.mp3")
+music.load(path + "MultiMedia/katyusha_8_bit.mp3")
 music.play(loops=-1) # -1 loops music indefinitely
 
 #initial conditions in polar coords
@@ -310,7 +314,7 @@ circles = pygame.sprite.Group()
 circles.add(circle)
 
 # Create disk (table top)
-disk = pygame.image.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/TableTop.png").convert_alpha()
+disk = pygame.image.load("MultiMedia/TableTop.png").convert_alpha()
 disk = pygame.transform.scale(disk, (DISK_RADIUS*2, DISK_RADIUS*2))
 
 # create a point charge
@@ -340,7 +344,7 @@ def start():
     
 # returns to menu / intro page
 def leave_game():
-    music.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/katyusha_8_bit.mp3")
+    music.load(path + "MultiMedia/katyusha_8_bit.mp3")
     music.play(loops=-1) # -1 loops music indefinitely
     run_intro() 
 
@@ -404,7 +408,7 @@ def run_game():
     global dt
     # organize music
     music.stop()
-    music.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
+    music.load(path + "MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
     music.play(loops=-1) # -1 loops music indefinitely
     
     # reset initial player and circle positions
