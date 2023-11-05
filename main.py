@@ -34,7 +34,7 @@ ACC_PLATFORM = 0
 V_INITIAL = -300
 PLAYER_VELOCITY = 4
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
-MAX_SCORE = 10
+MAX_SCORE = 2
 
 player1_angle = -np.pi / 2
 player2_angle = -np.pi / 2
@@ -169,6 +169,7 @@ class CircleSprite(pygame.sprite.Sprite):
 
         
     def update(self, force_sources,player1,player2):
+
         if pygame.sprite.collide_mask(self,player1) or pygame.sprite.collide_mask(self,player2):
             
             self.bool_color = not self.bool_color
@@ -179,7 +180,7 @@ class CircleSprite(pygame.sprite.Sprite):
             else:
                 self.pos.x = (PLAYER_RADIUS - PLAYER_WIDTH - self.radius)
             
-            if abs(self.vel.x) < 50:
+            if abs(self.vel.x) < 50 or abs(self.vel.y) > 50:
                 self.vel.x *= -1.25
             else:
                 self.vel.x *= -1.08
@@ -200,44 +201,33 @@ class CircleSprite(pygame.sprite.Sprite):
         else:
             self.color = PLAYER2_COLOR
             
-        if player1.score == MAX_SCORE:
-            text = font.render("Congratulations Player 1!")
-            pygame.quit()
-        if player2.score == MAX_SCORE:
-            text = font.render("Congratulations Player 2!")
-            pygame.quit()
-        
         #when the ball leaves the disk
-        if self.pos.x > PLAYER_RADIUS+PLAYER_WIDTH:
+        if abs(self.pos.x) > PLAYER_RADIUS+PLAYER_WIDTH:
             if self.color == PLAYER1_COLOR:
                 player2.score += 1
             else:
                 player1.score += 1
-            text = font.render('Respawning in 2 seconds...', True, black)
+            text = pygame.font.SysFont('verdana', 150).render('Respawning in 2 seconds...', True, black)
             screen.blit(text, text.get_rect(center = screen.get_rect().center))
             pygame.time.wait(2000)
             self.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
-            self.vel = pygame.Vector2(np.random.sample()*100,0)
+            self.vel = pygame.Vector2(np.random.sample()*100,np.random.sample()*10)
             pygame.time.wait(2000)
+            
+        if player1.score == MAX_SCORE:
+            text = font.render("Congratulations Player 1!",False, black)
+            screen.blit(text, text.get_rect(center = screen.get_rect().center))
+            pygame.time.wait(5000)
+            menu()
+        if player2.score == MAX_SCORE:
+            text = font.render("Congratulations Player 2!",False, black)
+            screen.blit(text, text.get_rect(center = screen.get_rect().center))
+            pygame.time.wait(5000)
+            menu()
+        
 
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
-
-    # def updateScores(self,radius):
-        
-    #     global player2_score
-    #     global player1_score
-    #     global max_score
-    #     if pos.x > radius and self.pygame.sprite.collide_rect(player1):
-    #         player2_score += 1
-    #     if pos.x > radius and self.pygame.sprite.collide_rect(player2):
-    #         player1_score += 1
-    #     if player1_score == MAXSCORE:
-    #         self.pygame.sprite.kill()
-    #         print('Player 1 has won the game!')
-    #     if player2_score == MAXSCORE:
-    #         self.pygame.sprite.kill()
-    #         print('Player 2 has won the game!')
-            
+      
             
             
 class Button():
@@ -430,9 +420,10 @@ def run_game():
     # reset initial player and circle positions
     player1.pos[1] = 0
     player2.pos[1] = np.pi
-    circle.pos = pygame.Vector2(DISK_RADIUS*np.random.randint(5,10)/10, np.pi/2)
-    circle.vel = vel_polar
+    circle.pos = pygame.Vector2(DISK_RADIUS/10, np.random.sample()*np.pi/2)
+    circle.vel = vel_polar*np.random.sample()
     circle.acc = acc_polar
+
 
     
     # making buttons
