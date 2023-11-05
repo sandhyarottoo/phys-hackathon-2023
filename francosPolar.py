@@ -26,8 +26,12 @@ width = 790
 height = 790
 RING_RADIUS = 300
 PLAYER_RADIUS = 305
+player_width = 8
 
-PLAYER_VELOCITY = 6
+w_platform = 0.0015 #number is in rad/s, returns deg/s
+
+vinitial = -300
+PLAYER_VELOCITY = 4
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
 
 player1_angle = -np.pi / 2
@@ -63,14 +67,13 @@ class Player(pygame.sprite.Sprite):
         self.color = color
         self.pos = pygame.Vector2(PLAYER_RADIUS, start_angle)
         self.keys = keys
-        self.player_width = 8
         
         self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
                         self.pos.y - PLAYER_ARC_ANGLE / 2,
                         self.pos.y + PLAYER_ARC_ANGLE / 2,
-                        width=self.player_width)
+                        width=player_width)
         self.rect = self.image.get_rect()
         self.rect.center = (width/2, height/2)
     
@@ -87,7 +90,7 @@ class Player(pygame.sprite.Sprite):
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
                         self.pos.y - PLAYER_ARC_ANGLE / 2,
                         self.pos.y + PLAYER_ARC_ANGLE / 2,
-                        width=self.player_width) 
+                        width=player_width) 
 
 
 class PointCharge(pygame.sprite.Sprite):
@@ -120,9 +123,12 @@ class CircleSprite(pygame.sprite.Sprite):
         self.pos = pos
         self.vel = vel
         self.acc = acc
+        self.radius = radius
+        self.bool_color = False
+        self.color = "blue"
 
         self.image = pygame.Surface((2 * radius, 2 * radius), pygame.SRCALPHA)
-        pygame.draw.circle(self.image, color, (radius, radius), radius)
+        pygame.draw.circle(self.image, self.color, (radius, radius), radius)
         self.rect = self.image.get_rect()
 
         pos_cartesian = polar_to_cartesian(self.pos)
@@ -142,7 +148,22 @@ class CircleSprite(pygame.sprite.Sprite):
         return force
 
         
-    def update(self, force_sources):
+    def update(self, force_sources,player1,player2):
+        if pygame.sprite.collide_mask(self,player1) or pygame.sprite.collide_mask(self,player2):
+            
+            self.bool_color = not self.bool_color
+
+            #collision change of motion
+            if self.pos.x < 0:
+                self.pos.x = -(PLAYER_RADIUS - player_width - self.radius)
+            else:
+                self.pos.x = (PLAYER_RADIUS - player_width - self.radius)
+            
+            if abs(self.vel.x) < 50:
+                self.vel.x *= -1.25
+            else:
+                self.vel.x *= -1.08
+        
         # Update the position of the sprite
         self.pos += self.vel*dt
         self.vel += self.acc*dt
@@ -151,9 +172,17 @@ class CircleSprite(pygame.sprite.Sprite):
         self.acc += self.getForce(force_sources)
 
         pos_cartesian = polar_to_cartesian(self.pos)
+        
         self.rect.center = (pos_cartesian.x + width/2, pos_cartesian.y + height/2)
 
+        if self.bool_color:
+            self.color = "blue"
+        else:
+            self.color = "red"
 
+        pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
+
+        
 ############ MAIN CODE ############
 
 # Initialize Pygame
@@ -164,22 +193,23 @@ pygame.display.set_caption("Circle Sprite")
 
 #initial conditions in polar coords
 pos_polar = pygame.Vector2(screen.get_width()/2, np.pi/2)
-vel_polar = pygame.Vector2(-300, 0)
+vel_polar = pygame.Vector2(vinitial, 0)
 acc_polar = pygame.Vector2(0,0)
 
 # Create a sprite
-circle = CircleSprite(pos_polar, vel_polar, acc_polar, 10, CIRCLE_COLOR)
+circle = CircleSprite(pos_polar, vel_polar, acc_polar, 20, CIRCLE_COLOR)
 circles = pygame.sprite.Group()
 circles.add(circle)
 
 # create a point charge
-charge = PointCharge(pygame.Vector2(-100, 0), 100000)
+#charge = PointCharge(pygame.Vector2(-100, 0), 100000)
+
 charges = pygame.sprite.Group()
-charges.add(charge)
+#charges.add(charge)
 
 # players
-player1_keys = [pygame.K_a, pygame.K_d]
-player2_keys = [pygame.K_LEFT, pygame.K_RIGHT]
+player1_keys = [pygame.K_d, pygame.K_a]
+player2_keys = [pygame.K_RIGHT, pygame.K_LEFT]
 
 player1 = Player("blue", 0, player1_keys)
 player2 = Player("red", np.pi, player2_keys)
@@ -190,7 +220,6 @@ players.add(player2)
 # Main game loop
 running = True
 
-w_platform = 0.01 #number is in rad/s, returns deg/s
 acc_platform = 0 #acceleration of the platform
 
 while running:
@@ -202,7 +231,7 @@ while running:
     screen.fill(BACKGROUND_COLOR)
     pygame.draw.circle(screen, (160,160,160), (width / 2, height / 2), RING_RADIUS)
 
-    circles.update(charges)
+    circles.update(charges,player1,player2)
     circles.draw(screen)
 
     charges.draw(screen)
