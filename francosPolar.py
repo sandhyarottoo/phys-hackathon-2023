@@ -27,12 +27,11 @@ height = 790
 RING_RADIUS = 300
 PLAYER_RADIUS = 305
 
-PLAYER_VELOCITY = 0.05
+PLAYER_VELOCITY = 10
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
 
 player1_angle = -np.pi / 2
 player2_angle = -np.pi / 2
-
 
 #time step for euler integration
 dt = 0.0001
@@ -66,24 +65,22 @@ class Player(pygame.sprite.Sprite):
         self.keys = keys
         player_width = 8
         
-        self.image = pygame.Surface((2*PLAYER_RADIUS + player_width , 2*PLAYER_RADIUS + player_width), pygame.SRCALPHA)
-        pygame.draw.arc(self.image, self.color, 
-                        (width/2 - PLAYER_RADIUS, height/2 - PLAYER_RADIUS, (PLAYER_RADIUS + player_width) * 2, (PLAYER_RADIUS + player_width) * 2), 
-                        self.pos.y - PLAYER_ARC_ANGLE / 2, 
-                        self.pos.y + PLAYER_ARC_ANGLE / 2, 
+        self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
+        pygame.draw.arc(self.image, self.color,
+                        (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
+                        self.pos.y - PLAYER_ARC_ANGLE / 2,
+                        self.pos.y + PLAYER_ARC_ANGLE / 2,
                         width=player_width)
         self.rect = self.image.get_rect()
-        #pos_cartesian = polar_to_cartesian(self.pos)
         self.rect.center = (width/2, height/2)
     
-    def update(self):
-        keys = pygame.key.get_pressed()
+    def update(self, keys):
+        
         # Move the player on the ring
         if keys[self.keys[0]]:
-            self.pos.y -= PLAYER_VELOCITY  
+            self.pos.y -= PLAYER_VELOCITY*dt  
         if keys[self.keys[1]]:
-            self.pos.y += PLAYER_VELOCITY   
-
+            self.pos.y += PLAYER_VELOCITY*dt   
 
 
 class PointCharge(pygame.sprite.Sprite):
@@ -203,7 +200,8 @@ while running:
 
     charges.draw(screen)
     
-    players.update()
+    keys = pygame.key.get_pressed()
+    players.update(keys)
     players.draw(screen)
     
    # Update the display
