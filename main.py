@@ -429,6 +429,10 @@ circles.add(circle)
 disk = pygame.image.load("MultiMedia/TableTop.png").convert_alpha()
 disk = pygame.transform.scale(disk, (DISK_RADIUS*2, DISK_RADIUS*2))
 
+# Create background
+bg = pygame.image.load("MultiMedia/background.png").convert_alpha()
+bg = pygame.transform.scale_by(bg, (1.1, 1.1))
+
 # create a point charge
 # charge = PointCharge(pygame.Vector2(-100, 0), 100000)
 charges = pygame.sprite.Group()
@@ -532,6 +536,9 @@ def run_game():
     # circle.vel = vel_polar*np.random.sample()
     # circle.acc = acc_polar
     
+    # reset background angle
+    angle = 0
+    
     # reset player score
     player1.score = 0
     player2.score = 0
@@ -554,6 +561,14 @@ def run_game():
 
         # Clears the screen
         screen.fill(SURFACE_COLOR)
+        
+        # updates background
+        bg_rotation = pygame.transform.rotate(bg, angle)
+        bg_rect = bg_rotation.get_rect(center = bg_rotation.get_rect(center = (WIDTH//2, HEIGHT//2)).center)
+        screen.blit(bg_rotation, bg_rect) # background
+        angle -= W_PLATFORM*360/(2*np.pi) * dt *1000
+        
+        # places table top
         screen.blit(disk, (WIDTH/2-300,HEIGHT/2-300))
         
         # updates buttons
