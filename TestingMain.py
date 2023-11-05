@@ -28,7 +28,7 @@ PLAYER_WIDTH = 8
 CIRCLE_COLOR = red
 W_PLATFORM = 0.0015 # number is in rad/s, returns deg/s
 ACC_PLATFORM = 0
-V_INITIAL = -50
+V_INITIAL = -400
 PLAYER_VELOCITY = 4
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
 MAX_SCORE = 2
@@ -192,6 +192,7 @@ class Player(pygame.sprite.Sprite):
         self.pos = pygame.Vector2(PLAYER_RADIUS, start_angle)
         self.keys = keys
         self.angular_width = PLAYER_ARC_ANGLE
+        self.velocity = PLAYER_VELOCITY
         
         self.image = pygame.Surface((2*(PLAYER_RADIUS), 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
@@ -206,9 +207,9 @@ class Player(pygame.sprite.Sprite):
         
         # Move the player on the ring
         if keys[self.keys[0]]:
-            self.pos.y -= PLAYER_VELOCITY*dt  
+            self.pos.y -= self.velocity*dt  
         if keys[self.keys[1]]:
-            self.pos.y += PLAYER_VELOCITY*dt  
+            self.pos.y += self.velocity*dt  
 
         self.image.fill(pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
@@ -273,8 +274,45 @@ class WidePaddle(PowerUp):
 
         return
 
+class SpeedPaddle(PowerUp):
+    def __init__(self):
+        super().__init__()
+
+        #choose your appearance attributes
+        self.color = "purple"
+        self.angular_width = np.pi/10
+        self.height = 20
+
+        self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
+        self.drawShape(self.image, self.pos, self.color, self.angular_width, self.height)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH/2, HEIGHT/2)
+        
+    def update(self, player1, player2):
+        #all power up update functions should take both players as input
+        if not self.hasBeenTaken:
+            self.drawShape(self.image, self.pos, self.color, self.angular_width, self.height)
+
+            if pygame.sprite.collide_mask(self, player1):
+                self.addPlayer(player1)
+                self.pickup_time = pygame.time.get_ticks()
+            elif pygame.sprite.collide_mask(self, player2):
+                self.addPlayer(player2)
+                self.pickup_time = pygame.time.get_ticks()
+
+            return
+        
+        #apply effect and measure elapsed time that effect lasts
+        player2.velocity = 2*PLAYER_VELOCITY
+        if pygame.time.get_ticks() - self.pickup_time > 3000:
+            player2.velocity = PLAYER_VELOCITY
+            self.kill()
+
+        return
+
 power_up_mapping = {
-    1: WidePaddle
+    1: WidePaddle,
+    2: SpeedPaddle
 }     
             
 class Button():
@@ -470,7 +508,7 @@ def run_game():
     circle.vel = vel_polar*np.random.sample()
     circle.acc = acc_polar
 
-    powerup_interval = 6000
+    powerup_interval = 5000
     last_powerup_time = pygame.time.get_ticks()
     
     # making buttons
