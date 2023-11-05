@@ -67,12 +67,13 @@ class Player(pygame.sprite.Sprite):
         self.color = color
         self.pos = pygame.Vector2(PLAYER_RADIUS, start_angle)
         self.keys = keys
+        self.angular_size = PLAYER_ARC_ANGLE
         
         self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
-                        self.pos.y - PLAYER_ARC_ANGLE / 2,
-                        self.pos.y + PLAYER_ARC_ANGLE / 2,
+                        self.pos.y - self.angular_size / 2,
+                        self.pos.y + self.angular_size / 2,
                         width=player_width)
         self.rect = self.image.get_rect()
         self.rect.center = (width/2, height/2)
@@ -88,9 +89,11 @@ class Player(pygame.sprite.Sprite):
         self.image.fill(pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
-                        self.pos.y - PLAYER_ARC_ANGLE / 2,
-                        self.pos.y + PLAYER_ARC_ANGLE / 2,
-                        width=player_width) 
+                        self.pos.y - self.angular_size / 2,
+                        self.pos.y + self.angular_size / 2,
+                        width=player_width)
+        
+
 
 
 class PointCharge(pygame.sprite.Sprite):
@@ -148,7 +151,7 @@ class CircleSprite(pygame.sprite.Sprite):
         return force
 
         
-    def update(self, force_sources,player1,player2):
+    def update(self, force_sources, player1, player2):
         if pygame.sprite.collide_mask(self,player1) or pygame.sprite.collide_mask(self,player2):
             
             self.bool_color = not self.bool_color
@@ -182,6 +185,61 @@ class CircleSprite(pygame.sprite.Sprite):
 
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
 
+
+class PowerUp(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+        self.hasBeenTaken = False
+        self.player = None
+        self.pos = pygame.Vector2(PLAYER_RADIUS, 2*np.pi*np.random.rand())
+    
+    def drawShape(self, color, angular_width, height):    
+        pygame.draw.arc(self.image, color,
+                        (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
+                        self.pos.y - angular_width / 2,
+                        self.pos.y + angular_width / 2,
+                        width=height)
+        
+    def addPlayer(self, player):
+        self.player = player
+        self.hasBeenTaken = True
+
+
+class WidePaddle(PowerUp):
+    def __init__(self):
+        super().__init__()
+
+        #choose your appearance attributes
+        self.color = "yellow"
+        self.angular_width = np.pi/8
+        self.height = 15
+
+        self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
+        self.drawShape(self.color, self.angular_width, self.height)
+        self.rect = self.image.get_rect()
+        self.rect.center = (width/2, height/2)
+        
+    def update(self, player1, player2):
+        if not self.hasBeenTaken:
+            self.drawShape(self.color, self.angular_width, self.height)
+
+            if pygame.sprite.collide_mask(self, player1):
+                self.addPlayer(player1)
+            elif pygame.sprite.collide_mask(self, player2):
+                self.addPlayer(player2)
+
+            return
+        
+        #use pygame.time.get_ticks to measure elapsed time that effect lasts
+        
+        return
+       
+
+        
+# power_up_mapping = {
+#     1:
+# }
         
 ############ MAIN CODE ############
 
