@@ -39,7 +39,7 @@ PLAYER_WIDTH = 8
 CIRCLE_COLOR = red
 W_PLATFORM = 0.0015 # number is in rad/s, returns deg/s
 ACC_PLATFORM = 0
-V_INITIAL = -300
+V_INITIAL = -350
 PLAYER_VELOCITY = 4
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
 MAX_SCORE = 10
@@ -542,6 +542,8 @@ def run_game():
     # making buttons
     menuButton = Button(20, 10, 100, 50, leave_game, "Menu", font, False)
     
+    text_time = 0
+    text = None
     # starting main loop
     running = True
     while running:
@@ -556,9 +558,6 @@ def run_game():
         
         # updates buttons
         menuButton.process()
-
-        circles.update(charges,player1,player2)
-        circles.draw(screen)
 
         charges.draw(screen)
         
@@ -581,7 +580,6 @@ def run_game():
         if len(power_ups) != 0 and not power_ups.sprites()[0].hasBeenTaken:
             power_ups.draw(screen)
         
-        text_time = 0
         game_over = False
         current_time = pygame.time.get_ticks()
         if player1.score == MAX_SCORE:
@@ -597,11 +595,19 @@ def run_game():
         if circle.respawn:
             text_time = current_time + 2000
             text = pygame.font.SysFont('verdana', 40).render('Respawning in 2 seconds...', True, black)
-        while pygame.time.get_ticks() < text_time:
+            circle.respawn = False
+            circle.pos = pygame.Vector2(PLAYER_RADIUS/20,np.random.sample()*2*np.pi)
+            circle.vel = pygame.Vector2(100 + np.random.sample()*50,np.random.sample()*2)
+            circles.update(charges,player1,player2)
+        if pygame.time.get_ticks() - text_time < 0:
+            circles.draw(screen)
             screen.blit(text, text.get_rect(center = screen.get_rect().center))
-            circle.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
-            circle.vel = pygame.Vector2(50 + np.random.sample()*50,np.random.sample()*1)
-            pygame.display.update()
+            #pygame.display.update()
+            
+        else:
+            circles.update(charges,player1,player2)
+            circles.draw(screen)
+
         if game_over:
             menu()
 
