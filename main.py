@@ -535,7 +535,7 @@ def run_FAQ():
                 "GAME: colour of the moving disk indicates who must hit it next. If you miss the disk, your opponent gets a point. Points are also given to the opponent if it wasn't your turn to hit it.\n\n"\
                 "HOW TO PLAY: Player 1 uses keys a and d to move. Player 2 uses the right and left arrows.\n\n"\
                 "POWER-UPS: If the game has gone on for a while, power ups will begin to appear as coloured arcs around the table. To collect it, simply move to it and give it a touch.\n\n"\
-                "TYPES OF POWER-UPS: Yellow power-ups increases the sides of your arc. Purple power-ups increase its speed."    
+                "TYPES OF POWER-UPS: Yellow power-up increases the sides of your arc. Purple power-up increases your opponents speed."    
     inst_font = pygame.font.SysFont('verdana', 20)
     
     while options:
