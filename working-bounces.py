@@ -121,13 +121,14 @@ class CircleSprite(pygame.sprite.Sprite):
         self.pos = pos
         self.vel = vel
         self.acc = acc
-
+        
         self.image = pygame.Surface((2 * radius, 2 * radius), pygame.SRCALPHA)
         pygame.draw.circle(self.image, color, (radius, radius), radius)
         self.rect = self.image.get_rect()
 
         pos_cartesian = polar_to_cartesian(self.pos)
         self.rect.center = (pos_cartesian.x, pos_cartesian.y)
+        self.isoutside = False
     
     def getForce(self, sources):
         #each object in sources must have a computeForce(self.pos, other.pos) method
@@ -154,29 +155,42 @@ class CircleSprite(pygame.sprite.Sprite):
 
         self.acc *= 0
         self.acc += self.getForce(force_sources)
-
         pos_cartesian = polar_to_cartesian(self.pos)
-    
+        
+        if self.pos.x > PLAYER_RADIUS:
+            text = font.render('Respawning in 2 seconds...', True, green)
+            screen.blit(text, text.get_rect(center = screen.get_rect().center))
+            pygame.time.wait(2000)
+            self.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
+            self.vel.x = np.random.sample()*100
+            pygame.time.wait(2000)
+            
         
         self.rect.center = (pos_cartesian.x + width/2, pos_cartesian.y + height/2)
 
-     
-    def respawn(self,disk_radius):
-        if self.pos.x > disk_radius:
-            self.kill()
-            
+    
+
+# =============================================================================
+#             if  current_time < message_end_time:
+#                 screen.blit(text, text.get_rect(center = screen.get_rect().center))
+#                 current_time = pygame.time.get_ticks()
+#             else:
+#                 self.pos = pygame.Vector2(PLAYER_RADIUS/5,np.random.sample()*2*np.pi)
+# =============================================================================
+
             
 ############ MAIN CODE ############
 
 # Initialize Pygame
 pygame.init()
+font = pygame.font.SysFont('chalkduster.ttf', 24)
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((790,790))
 pygame.display.set_caption("Circle Sprite")
 
 #initial conditions in polar coords
-pos_polar = pygame.Vector2(screen.get_width()/2, np.pi/2)
-vel_polar = pygame.Vector2(-100, 0)
+pos_polar = pygame.Vector2(PLAYER_RADIUS/5, np.pi/2)
+vel_polar = pygame.Vector2(100, 0)
 acc_polar = pygame.Vector2(0,0)
 
 # Create a sprite
@@ -225,15 +239,7 @@ while running:
     keys = pygame.key.get_pressed()
     players.update(keys)
     players.draw(screen)
-    circle.respawn(RING_RADIUS)
 
-    if not circle.alive():
-        message_end_time = pygame.time.get_ticks() + 2000
-        text = pygame.font.Font('Respawning in 2 seconds...')
-    if current_time < message_end_time:
-        screen.blit(text, text.get_rect(center = screen.get_rect().center))
-        circle = CircleSprite(pos_polar, vel_polar, acc_polar, 20, CIRCLE_COLOR)
-        circles.add(circle)
         
     # Update the display
     pygame.display.flip()
