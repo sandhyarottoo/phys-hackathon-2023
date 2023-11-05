@@ -27,7 +27,7 @@ height = 790
 RING_RADIUS = 300
 PLAYER_RADIUS = 305
 
-PLAYER_VELOCITY = 10
+PLAYER_VELOCITY = 6
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
 
 player1_angle = -np.pi / 2
@@ -63,14 +63,14 @@ class Player(pygame.sprite.Sprite):
         self.color = color
         self.pos = pygame.Vector2(PLAYER_RADIUS, start_angle)
         self.keys = keys
-        player_width = 8
+        self.player_width = 8
         
         self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
                         self.pos.y - PLAYER_ARC_ANGLE / 2,
                         self.pos.y + PLAYER_ARC_ANGLE / 2,
-                        width=player_width)
+                        width=self.player_width)
         self.rect = self.image.get_rect()
         self.rect.center = (width/2, height/2)
     
@@ -80,7 +80,14 @@ class Player(pygame.sprite.Sprite):
         if keys[self.keys[0]]:
             self.pos.y -= PLAYER_VELOCITY*dt  
         if keys[self.keys[1]]:
-            self.pos.y += PLAYER_VELOCITY*dt   
+            self.pos.y += PLAYER_VELOCITY*dt  
+
+        self.image.fill(pygame.SRCALPHA)
+        pygame.draw.arc(self.image, self.color,
+                        (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
+                        self.pos.y - PLAYER_ARC_ANGLE / 2,
+                        self.pos.y + PLAYER_ARC_ANGLE / 2,
+                        width=self.player_width) 
 
 
 class PointCharge(pygame.sprite.Sprite):
