@@ -15,7 +15,10 @@ import os
 
 # Folder path (to 'phys-hackathon-2023/')
 # path = '/Users/sandhya/phys-hackathon-2023/'
-path = input("write the path to the 'phys-hackathon-2023' folder here (press enter if None):")
+path = ''
+if os.getcwd().split('/')[-1] != "phys-hackathon-2023":
+    path = input("write the path to the 'phys-hackathon-2023' folder here:")
+
 
 # Constants
 WIDTH = 1200
