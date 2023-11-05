@@ -24,7 +24,7 @@ blue = (0,0,255)
 white = (255,255,255)
 SURFACE_COLOR = (50, 50, 60)
 PLAYER1_COLOR = (255, 50, 50)
-PLAYER2_COLOR = (50, 255, 50)
+PLAYER2_COLOR = (50, 50, 255)
 DISK_RADIUS = 300
 PLAYER_RADIUS = 305
 PLAYER_WIDTH = 8
@@ -34,6 +34,7 @@ ACC_PLATFORM = 0
 V_INITIAL = -300
 PLAYER_VELOCITY = 4
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
+MAX_SCORE = 10
 
 player1_angle = -np.pi / 2
 player2_angle = -np.pi / 2
@@ -198,6 +199,26 @@ class CircleSprite(pygame.sprite.Sprite):
             self.color = PLAYER1_COLOR
         else:
             self.color = PLAYER2_COLOR
+            
+        if player1.score == MAX_SCORE:
+            text = font.render("Congratulations Player 1!")
+            pygame.quit()
+        if player2.score == MAX_SCORE:
+            text = font.render("Congratulations Player 2!")
+            pygame.quit()
+        
+        #when the ball leaves the disk
+        if self.pos.x > PLAYER_RADIUS+PLAYER_WIDTH:
+            if self.color == PLAYER1_COLOR:
+                player2.score += 1
+            else:
+                player1.score += 1
+            text = font.render('Respawning in 2 seconds...', True, black)
+            screen.blit(text, text.get_rect(center = screen.get_rect().center))
+            pygame.time.wait(2000)
+            self.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
+            self.vel = pygame.Vector2(np.random.sample()*100,0)
+            pygame.time.wait(2000)
 
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
 
@@ -263,6 +284,15 @@ class Button():
 
 
 
+class scoreboard():
+    def __init__(self,player1,player2):
+        # Scoreboard setup
+        self.P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
+        self.P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player2.score}", False, player2.color)
+
+    def update_score(self):
+        self.P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
+        self.P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player2.score}", False, player2.color)
 
 
 
@@ -273,6 +303,7 @@ class Button():
 
 # pygame setup
 pygame.init()
+pygame.font.init()
 pygame.display.set_caption("Pong-Inertial Game")
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
@@ -283,7 +314,7 @@ title = pygame.font.SysFont('verdana', 150).render('Pong-Inertial', False, (250,
 
 # Adding the musics tracks
 music = pygame.mixer.music
-music.load("MultiMedia/katyusha_8_bit.mp3")
+music.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/katyusha_8_bit.mp3")
 music.play(loops=-1) # -1 loops music indefinitely
 
 #initial conditions in polar coords
@@ -297,7 +328,7 @@ circles = pygame.sprite.Group()
 circles.add(circle)
 
 # Create disk (table top)
-disk = pygame.image.load("MultiMedia/TableTop.png").convert_alpha()
+disk = pygame.image.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/TableTop.png").convert_alpha()
 disk = pygame.transform.scale(disk, (DISK_RADIUS*2, DISK_RADIUS*2))
 
 # create a point charge
@@ -316,9 +347,12 @@ players.add(player1)
 players.add(player2)
 
 # Scoreboard setup
-P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
-P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player1.score}", False, player2.color)
-
+# =============================================================================
+# P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
+# P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player1.score}", False, player2.color)
+# 
+# =============================================================================
+scoreboard = scoreboard(player1,player2)
 
 # Starts function
 def start():
@@ -326,7 +360,7 @@ def start():
     
 # returns to menu / intro page
 def leave_game():
-    music.load("MultiMedia/katyusha_8_bit.mp3")
+    music.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/katyusha_8_bit.mp3")
     music.play(loops=-1) # -1 loops music indefinitely
     run_intro() 
 
@@ -410,13 +444,11 @@ def run_game():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                
 
         # Clears the screen
         screen.fill(SURFACE_COLOR)
         screen.blit(disk, (WIDTH/2-300,HEIGHT/2-300))
-        
-        screen.blit(P1Score, (WIDTH/2-P1Score.get_width()-40, 20))
-        screen.blit(P2Score, (WIDTH/2+40, 20))
         
         # updates buttons
         menuButton.process()
@@ -429,6 +461,13 @@ def run_game():
         keys = pygame.key.get_pressed()
         players.update(keys)
         players.draw(screen)
+        
+        scoreboard.update_score()
+        screen.blit(scoreboard.P1Score, (WIDTH/2-scoreboard.P1Score.get_width()-40, 20))
+        screen.blit(scoreboard.P2Score, (WIDTH/2+40, 20))
+        
+        
+        
         
 
         # flip() the display to put your work on screen
