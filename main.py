@@ -17,7 +17,7 @@ import os
 # path = '/Users/sandhya/phys-hackathon-2023/'
 path = ''
 if os.getcwd().split('/')[-1] != "phys-hackathon-2023":
-    path = input("write the path to the 'phys-hackathon-2023' folder here:")
+    path = path = '/Users/sandhya/phys-hackathon-2023/' #input("write the path to the 'phys-hackathon-2023' folder here:")
 
 
 # Constants
@@ -32,7 +32,7 @@ blue = (0,0,255)
 white = (255,255,255)
 SURFACE_COLOR = (50, 50, 60)
 PLAYER1_COLOR = (255, 50, 50)
-PLAYER2_COLOR = (50, 255, 50)
+PLAYER2_COLOR = (50, 50, 255)
 DISK_RADIUS = 300
 PLAYER_RADIUS = 305
 PLAYER_WIDTH = 8
@@ -443,11 +443,11 @@ circles = pygame.sprite.Group()
 circles.add(circle)
 
 # Create disk (table top)
-disk = pygame.image.load("MultiMedia/TableTop.png").convert_alpha()
+disk = pygame.image.load(path+ "MultiMedia/TableTop.png").convert_alpha()
 disk = pygame.transform.scale(disk, (DISK_RADIUS*2, DISK_RADIUS*2))
 
 # Create background
-bg = pygame.image.load("MultiMedia/background.png").convert_alpha()
+bg = pygame.image.load(path+"MultiMedia/background.png").convert_alpha()
 bg = pygame.transform.scale_by(bg, (1.1, 1.1))
 
 # create a point charge
@@ -596,7 +596,7 @@ def run_game():
         bg_rotation = pygame.transform.rotate(bg, angle)
         bg_rect = bg_rotation.get_rect(center = bg_rotation.get_rect(center = (WIDTH//2, HEIGHT//2)).center)
         screen.blit(bg_rotation, bg_rect) # background
-        angle -= W_PLATFORM*360/(2*np.pi) * dt *1000
+        angle -= W_PLATFORM*360/(2*np.pi) * dt *100
         
         # places table top
         screen.blit(disk, (WIDTH/2-300,HEIGHT/2-300))
