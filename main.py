@@ -284,10 +284,10 @@ title = pygame.font.SysFont('verdana', 150).render('Pong-Inertial', False, (250,
 # Adding the musics tracks
 music = pygame.mixer.music
 music.load("MultiMedia/katyusha_8_bit.mp3")
-music.play()
+music.play(loops=-1) # -1 loops music indefinitely
 
 #initial conditions in polar coords
-pos_polar = pygame.Vector2(screen.get_width()/2, np.pi/2)
+pos_polar = pygame.Vector2(DISK_RADIUS*np.random.randint(5,10)/10, np.pi/2)
 vel_polar = pygame.Vector2(V_INITIAL, 0)
 acc_polar = pygame.Vector2(0,0)
 
@@ -327,7 +327,7 @@ def start():
 # returns to menu / intro page
 def leave_game():
     music.load("MultiMedia/katyusha_8_bit.mp3")
-    music.play()
+    music.play(loops=-1) # -1 loops music indefinitely
     run_intro() 
 
 # Opens intro page
@@ -387,14 +387,19 @@ def run_options():
         
 # to run game
 def run_game():
+    global dt
     # organize music
     music.stop()
     music.load("MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
-    music.play()
+    music.play(loops=-1) # -1 loops music indefinitely
     
-    # reset initial player positions
+    # reset initial player and circle positions
     player1.pos[1] = 0
     player2.pos[1] = np.pi
+    circle.pos = pygame.Vector2(DISK_RADIUS*np.random.randint(5,10)/10, np.pi/2)
+    circle.vel = vel_polar
+    circle.acc = acc_polar
+
     
     # making buttons
     menuButton = Button(20, 10, 100, 50, leave_game, "Menu", font, False)
