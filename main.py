@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 import sys
+import os
 
 # global player2_score = 0
 # global player1_score = 0
@@ -153,6 +154,8 @@ class CircleSprite(pygame.sprite.Sprite):
 
         pos_cartesian = polar_to_cartesian(self.pos)
         self.rect.center = (pos_cartesian.x, pos_cartesian.y)
+        
+        self.respawn = False
     
     def getForce(self, sources):
         #each object in sources must have a computeForce(self.pos, other.pos) method
@@ -169,6 +172,8 @@ class CircleSprite(pygame.sprite.Sprite):
 
         
     def update(self, force_sources,player1,player2):
+        
+        self.respawn = False
 
         if pygame.sprite.collide_mask(self,player1) or pygame.sprite.collide_mask(self,player2):
             
@@ -182,6 +187,7 @@ class CircleSprite(pygame.sprite.Sprite):
             
             if abs(self.vel.x) < 50 or abs(self.vel.y) > 50:
                 self.vel.x *= -1.25
+                self.vel.y *= 0.8
             else:
                 self.vel.x *= -1.08
         
@@ -202,28 +208,13 @@ class CircleSprite(pygame.sprite.Sprite):
             self.color = PLAYER2_COLOR
             
         #when the ball leaves the disk
-        if abs(self.pos.x) > PLAYER_RADIUS+PLAYER_WIDTH:
+        if abs(self.pos.x) > PLAYER_RADIUS+PLAYER_WIDTH and player1.score < MAX_SCORE and player2.score < MAX_SCORE:
             if self.color == PLAYER1_COLOR:
                 player2.score += 1
             else:
                 player1.score += 1
-            text = pygame.font.SysFont('verdana', 150).render('Respawning in 2 seconds...', True, black)
-            screen.blit(text, text.get_rect(center = screen.get_rect().center))
-            pygame.time.wait(2000)
-            self.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
-            self.vel = pygame.Vector2(np.random.sample()*100,np.random.sample()*10)
-            pygame.time.wait(2000)
-            
-        if player1.score == MAX_SCORE:
-            text = font.render("Congratulations Player 1!",False, black)
-            screen.blit(text, text.get_rect(center = screen.get_rect().center))
-            pygame.time.wait(5000)
-            menu()
-        if player2.score == MAX_SCORE:
-            text = font.render("Congratulations Player 2!",False, black)
-            screen.blit(text, text.get_rect(center = screen.get_rect().center))
-            pygame.time.wait(5000)
-            menu()
+            self.respawn = True
+
         
 
         pygame.draw.circle(self.image, self.color, (self.radius, self.radius), self.radius)
@@ -289,6 +280,7 @@ class scoreboard():
 
 
 
+
 ########## GAME ##########
 
 # pygame setup
@@ -337,11 +329,9 @@ players.add(player1)
 players.add(player2)
 
 # Scoreboard setup
-# =============================================================================
-# P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
-# P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player1.score}", False, player2.color)
-# 
-# =============================================================================
+P1Score = pygame.font.SysFont('verdana', 40).render(f"Player 1: {player1.score}", False, player1.color)
+P2Score = pygame.font.SysFont('verdana', 40).render(f"Player 2: {player1.score}", False, player2.color)
+
 scoreboard = scoreboard(player1,player2)
 
 # Starts function
@@ -414,7 +404,7 @@ def run_game():
     global dt
     # organize music
     music.stop()
-    music.load("MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
+    music.load("/Users/sandhya/phys-hackathon-2023/MultiMedia/Star Wars - Duel Of The Fates 8 - BIT REMIX.mp3")
     music.play(loops=-1) # -1 loops music indefinitely
     
     # reset initial player and circle positions
@@ -457,10 +447,32 @@ def run_game():
         screen.blit(scoreboard.P1Score, (WIDTH/2-scoreboard.P1Score.get_width()-40, 20))
         screen.blit(scoreboard.P2Score, (WIDTH/2+40, 20))
         
-        
-        
-        
+        text_time = 0
+        game_over = False
+        current_time = pygame.time.get_ticks()
+        if player1.score == MAX_SCORE:
+            text = font.render("Congratulations Player 1!",False, black)
+            text_time = current_time + 2000
+            game_over = True
+            circle.respawn = False
+        if player2.score == MAX_SCORE:
+            text = font.render("Congratulations Player 2!",False, black)
+            text_time = current_time + 2000
+            game_over = True
+            circle.respawn = False
+        if circle.respawn:
+            text_time = current_time + 2000
+            text = pygame.font.SysFont('verdana', 40).render('Respawning in 2 seconds...', True, black)
+        while pygame.time.get_ticks() < text_time:
+            screen.blit(text, text.get_rect(center = screen.get_rect().center))
+            circle.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
+            circle.vel = pygame.Vector2(np.random.sample()*100,np.random.sample()*10)
+            pygame.display.update()
+        if game_over:
+            menu()
 
+                
+            
         # flip() the display to put your work on screen
         pygame.display.flip()
         
