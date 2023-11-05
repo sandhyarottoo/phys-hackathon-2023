@@ -8,6 +8,8 @@ import sys
 
 
 
+
+
 ########## CONSTANTS ##########
 
 # Constants
@@ -65,6 +67,11 @@ def a_radial(w,r,v_theta):
 
 def a_tan(w,v_radial,r,ang_acc):
     return w*v_radial+r*ang_acc
+
+
+
+
+
 
 
 
@@ -253,6 +260,13 @@ class Button():
                                                 self.rect.height/2 - self.textSurf.get_rect().height/2])
         screen.blit(self.surface, self.rect)
         
+
+
+
+
+
+
+
 
 
 ########## GAME ##########
