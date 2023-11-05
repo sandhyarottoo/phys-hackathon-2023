@@ -27,12 +27,15 @@ width = 790
 height = 790
 RING_RADIUS = 300
 PLAYER_RADIUS = 305
+player_width = 8
 
 PLAYER_VELOCITY = 6
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
 
 player1_angle = -np.pi / 2
 player2_angle = -np.pi / 2
+
+MAX_SCORE = 10
 
 #time step for euler integration
 dt = 0.0001
@@ -89,6 +92,7 @@ class Player(pygame.sprite.Sprite):
                         self.pos.y - PLAYER_ARC_ANGLE / 2,
                         self.pos.y + PLAYER_ARC_ANGLE / 2,
                         width=self.player_width) 
+        
 
 
 class PointCharge(pygame.sprite.Sprite):
@@ -121,7 +125,7 @@ class CircleSprite(pygame.sprite.Sprite):
         self.pos = pos
         self.vel = vel
         self.acc = acc
-        
+        self.radius = radius
         self.image = pygame.Surface((2 * radius, 2 * radius), pygame.SRCALPHA)
         pygame.draw.circle(self.image, color, (radius, radius), radius)
         self.rect = self.image.get_rect()
@@ -129,6 +133,8 @@ class CircleSprite(pygame.sprite.Sprite):
         pos_cartesian = polar_to_cartesian(self.pos)
         self.rect.center = (pos_cartesian.x, pos_cartesian.y)
         self.isoutside = False
+        self.bool_color = False
+        self.color = "blue"
     
     def getForce(self, sources):
         #each object in sources must have a computeForce(self.pos, other.pos) method
@@ -145,6 +151,20 @@ class CircleSprite(pygame.sprite.Sprite):
 
         
     def update(self, force_sources,player1,player2):
+        if pygame.sprite.collide_mask(self,player1) or pygame.sprite.collide_mask(self,player2):
+            
+            self.bool_color = not self.bool_color
+
+            #collision change of motion
+            if self.pos.x < 0:
+                self.pos.x = -(PLAYER_RADIUS - player_width - self.radius)
+            else:
+                self.pos.x = (PLAYER_RADIUS - player_width - self.radius)
+            
+            if abs(self.vel.x) < 50:
+                self.vel.x *= -1.25
+            else:
+                self.vel.x *= -1.08
         # Update the position of the sprite
         self.pos += self.vel*dt
         self.vel += self.acc*dt
@@ -157,7 +177,18 @@ class CircleSprite(pygame.sprite.Sprite):
         self.acc += self.getForce(force_sources)
         pos_cartesian = polar_to_cartesian(self.pos)
         
+        if player1.score == MAX_SCORE:
+            text = font.render("Congratulations Player 1!")
+            pygame.quit()
+        if player2.score == MAX_SCORE:
+            text = font.render("Congratulations Player 2!")
+            pygame.quit()
+        
         if self.pos.x > PLAYER_RADIUS:
+            if self.color == blue:
+                player2.score += 1
+            else:
+                player1.score += 1
             text = font.render('Respawning in 2 seconds...', True, green)
             screen.blit(text, text.get_rect(center = screen.get_rect().center))
             pygame.time.wait(2000)
@@ -165,6 +196,11 @@ class CircleSprite(pygame.sprite.Sprite):
             self.vel.x = np.random.sample()*100
             pygame.time.wait(2000)
             
+        
+        if self.bool_color:
+            self.color = "blue"
+        else:
+            self.color = "red"    
         
         self.rect.center = (pos_cartesian.x + width/2, pos_cartesian.y + height/2)
 
@@ -219,7 +255,7 @@ players.add(player2)
 running = True
 
 w_platform = 0.001 #number is in rad/s, returns deg/s
-acc_platform = 0 #acceleration of the platform
+acc_platform = 0.01 #acceleration of the platform
 
 while running:
     current_time = pygame.time.get_ticks()
