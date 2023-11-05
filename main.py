@@ -35,7 +35,7 @@ ACC_PLATFORM = 0
 V_INITIAL = -300
 PLAYER_VELOCITY = 4
 PLAYER_ARC_ANGLE = np.pi / 12  # 90 degrees in radians
-MAX_SCORE = 2
+MAX_SCORE = 10
 
 player1_angle = -np.pi / 2
 player2_angle = -np.pi / 2
@@ -78,7 +78,6 @@ def a_tan(w,v_radial,r,ang_acc):
 
 
 ########## CLASSES ##########
-
 class Player(pygame.sprite.Sprite):
     def __init__(self, color, start_angle, keys):
         super().__init__()
@@ -86,12 +85,13 @@ class Player(pygame.sprite.Sprite):
         self.color = color
         self.pos = pygame.Vector2(PLAYER_RADIUS, start_angle)
         self.keys = keys
+        self.angular_width = PLAYER_ARC_ANGLE
         
-        self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
+        self.image = pygame.Surface((2*(PLAYER_RADIUS), 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
-                        self.pos.y - PLAYER_ARC_ANGLE / 2,
-                        self.pos.y + PLAYER_ARC_ANGLE / 2,
+                        self.pos.y - self.angular_width / 2,
+                        self.pos.y + self.angular_width / 2,
                         width=PLAYER_WIDTH)
         self.rect = self.image.get_rect()
         self.rect.center = (WIDTH/2, HEIGHT/2)
@@ -107,9 +107,69 @@ class Player(pygame.sprite.Sprite):
         self.image.fill(pygame.SRCALPHA)
         pygame.draw.arc(self.image, self.color,
                         (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
-                        self.pos.y - PLAYER_ARC_ANGLE / 2,
-                        self.pos.y + PLAYER_ARC_ANGLE / 2,
-                        width=PLAYER_WIDTH) 
+                        self.pos.y - self.angular_width / 2,
+                        self.pos.y + self.angular_width / 2,
+                        width=PLAYER_WIDTH)
+
+class PowerUp(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+
+        self.hasBeenTaken = False
+        self.player = None
+        self.pos = pygame.Vector2(PLAYER_RADIUS, 2*np.pi*np.random.rand())
+    
+    def drawShape(self, image, pos, color, angular_width, height):    
+        pygame.draw.arc(image, color,
+                        (0, 0, (PLAYER_RADIUS) * 2, (PLAYER_RADIUS) * 2), 
+                        pos.y - angular_width / 2,
+                        pos.y + angular_width / 2,
+                        width=height)
+        
+    def addPlayer(self, player):
+        self.player = player
+        self.hasBeenTaken = True
+
+
+class WidePaddle(PowerUp):
+    def __init__(self):
+        super().__init__()
+
+        #choose your appearance attributes
+        self.color = "yellow"
+        self.angular_width = np.pi/10
+        self.height = 20
+
+        self.image = pygame.Surface((2*(PLAYER_RADIUS) , 2*(PLAYER_RADIUS)), pygame.SRCALPHA)
+        self.drawShape(self.image, self.pos, self.color, self.angular_width, self.height)
+        self.rect = self.image.get_rect()
+        self.rect.center = (WIDTH/2, HEIGHT/2)
+        
+    def update(self, player1, player2):
+        #all power up update functions should take both players as input
+        if not self.hasBeenTaken:
+            self.drawShape(self.image, self.pos, self.color, self.angular_width, self.height)
+
+            if pygame.sprite.collide_mask(self, player1):
+                self.addPlayer(player1)
+                self.pickup_time = pygame.time.get_ticks()
+            elif pygame.sprite.collide_mask(self, player2):
+                self.addPlayer(player2)
+                self.pickup_time = pygame.time.get_ticks()
+
+            return
+        
+        #apply effect and measure elapsed time that effect lasts
+        self.player.angular_width = 1.6*PLAYER_ARC_ANGLE
+        if pygame.time.get_ticks() - self.pickup_time > 5000:
+            self.player.angular_width = PLAYER_ARC_ANGLE
+            self.kill()
+
+        return
+
+power_up_mapping = {
+    1: WidePaddle
+}     
 
 
 
@@ -177,7 +237,15 @@ class CircleSprite(pygame.sprite.Sprite):
 
         if pygame.sprite.collide_mask(self,player1) or pygame.sprite.collide_mask(self,player2):
             
+            if pygame.sprite.collide_mask(self,player1) and self.color != player1.color:
+                self.respawn = True
+                player2.score += 1
+            if pygame.sprite.collide_mask(self,player2) and self.color != player2.color:
+                self.respawn = True
+                player1.score += 1
+                
             self.bool_color = not self.bool_color
+
 
             #collision change of motion
             if self.pos.x < 0:
@@ -206,6 +274,7 @@ class CircleSprite(pygame.sprite.Sprite):
             self.color = PLAYER1_COLOR
         else:
             self.color = PLAYER2_COLOR
+            
             
         #when the ball leaves the disk
         if abs(self.pos.x) > PLAYER_RADIUS+PLAYER_WIDTH and player1.score < MAX_SCORE and player2.score < MAX_SCORE:
@@ -318,6 +387,8 @@ disk = pygame.transform.scale(disk, (DISK_RADIUS*2, DISK_RADIUS*2))
 charges = pygame.sprite.Group()
 # charges.add(charge)
 
+power_ups = pygame.sprite.Group()
+
 # Players
 player1_keys = [pygame.K_d, pygame.K_a]
 player2_keys = [pygame.K_RIGHT, pygame.K_LEFT]
@@ -414,7 +485,8 @@ def run_game():
     circle.vel = vel_polar*np.random.sample()
     circle.acc = acc_polar
 
-
+    powerup_interval = 6000
+    last_powerup_time = pygame.time.get_ticks()
     
     # making buttons
     menuButton = Button(20, 10, 100, 50, leave_game, "Menu", font, False)
@@ -447,17 +519,28 @@ def run_game():
         screen.blit(scoreboard.P1Score, (WIDTH/2-scoreboard.P1Score.get_width()-40, 20))
         screen.blit(scoreboard.P2Score, (WIDTH/2+40, 20))
         
+        if (len(power_ups) == 0) and (pygame.time.get_ticks() - last_powerup_time > powerup_interval):
+            last_powerup_time = pygame.time.get_ticks()
+            random_num = np.random.randint(1, len(power_up_mapping)+1)
+            current_powerup = power_up_mapping[random_num]()
+            power_ups.add(current_powerup)
+        
+        power_ups.update(player1, player2)
+        
+        if len(power_ups) != 0 and not power_ups.sprites()[0].hasBeenTaken:
+            power_ups.draw(screen)
+        
         text_time = 0
         game_over = False
         current_time = pygame.time.get_ticks()
         if player1.score == MAX_SCORE:
             text = font.render("Congratulations Player 1!",False, black)
-            text_time = current_time + 2000
+            text_time = current_time + 5000
             game_over = True
             circle.respawn = False
         if player2.score == MAX_SCORE:
             text = font.render("Congratulations Player 2!",False, black)
-            text_time = current_time + 2000
+            text_time = current_time + 5000
             game_over = True
             circle.respawn = False
         if circle.respawn:
@@ -466,7 +549,7 @@ def run_game():
         while pygame.time.get_ticks() < text_time:
             screen.blit(text, text.get_rect(center = screen.get_rect().center))
             circle.pos = pygame.Vector2(PLAYER_RADIUS/10,np.random.sample()*2*np.pi)
-            circle.vel = pygame.Vector2(np.random.sample()*100,np.random.sample()*10)
+            circle.vel = pygame.Vector2(np.random.sample()*100,np.random.sample()*1)
             pygame.display.update()
         if game_over:
             menu()
