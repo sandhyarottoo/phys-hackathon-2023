@@ -414,9 +414,13 @@ def run_game():
     # reset initial player and circle positions
     player1.pos[1] = 0
     player2.pos[1] = np.pi
-    circle.pos = pygame.Vector2(DISK_RADIUS/10, np.random.sample()*np.pi/2)
-    circle.vel = vel_polar*np.random.sample()
-    circle.acc = acc_polar
+    # circle.pos = pygame.Vector2(DISK_RADIUS/10, np.random.sample()*np.pi/2)
+    # circle.vel = vel_polar*np.random.sample()
+    # circle.acc = acc_polar
+    
+    # reset player score
+    player1.score = 0
+    player2.score = 0
 
 
     
