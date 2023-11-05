@@ -160,7 +160,12 @@ class CircleSprite(pygame.sprite.Sprite):
         
         self.rect.center = (pos_cartesian.x + width/2, pos_cartesian.y + height/2)
 
-        
+     
+    def respawn(self,disk_radius):
+        if self.pos.x > disk_radius:
+            self.kill()
+            
+            
 ############ MAIN CODE ############
 
 # Initialize Pygame
@@ -203,6 +208,7 @@ w_platform = 0.001 #number is in rad/s, returns deg/s
 acc_platform = 0 #acceleration of the platform
 
 while running:
+    current_time = pygame.time.get_ticks()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -219,10 +225,20 @@ while running:
     keys = pygame.key.get_pressed()
     players.update(keys)
     players.draw(screen)
-    
-   # Update the display
+    circle.respawn(RING_RADIUS)
+
+    if not circle.alive():
+        message_end_time = pygame.time.get_ticks() + 2000
+        text = pygame.font.Font('Respawning in 2 seconds...')
+    if current_time < message_end_time:
+        screen.blit(text, text.get_rect(center = screen.get_rect().center))
+        circle = CircleSprite(pos_polar, vel_polar, acc_polar, 20, CIRCLE_COLOR)
+        circles.add(circle)
+        
+    # Update the display
     pygame.display.flip()
     dt = clock.tick(60) / 1000
+
 
 # Quit Pygame
 pygame.quit()
