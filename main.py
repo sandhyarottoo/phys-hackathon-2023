@@ -32,7 +32,7 @@ blue = (0,0,255)
 white = (255,255,255)
 SURFACE_COLOR = (50, 50, 60)
 PLAYER1_COLOR = (255, 50, 50)
-PLAYER2_COLOR = (50, 50, 255)
+PLAYER2_COLOR = (50, 255, 50)
 DISK_RADIUS = 300
 PLAYER_RADIUS = 305
 PLAYER_WIDTH = 8
@@ -77,6 +77,23 @@ def a_radial(w,r,v_theta):
 def a_tan(w,v_radial,r,ang_acc):
     return w*v_radial+r*ang_acc
 
+# from: https://stackoverflow.com/questions/42014195/rendering-text-with-multiple-lines-in-pygame
+def blit_text(surface, text, pos, font, color=pygame.Color('black')):
+    words = [word.split(' ') for word in text.splitlines()]  # 2D array where each row is a list of words.
+    space = font.size(' ')[0]  # The width of a space.
+    max_width, max_height = surface.get_size()
+    x, y = pos
+    for line in words:
+        for word in line:
+            word_surface = font.render(word, 0, color)
+            word_width, word_height = word_surface.get_size()
+            if x + word_width >= max_width:
+                x = pos[0]  # Reset the x.
+                y += word_height  # Start on new row.
+            surface.blit(word_surface, (x, y))
+            x += word_width + space
+        x = pos[0]  # Reset the x.
+        y += word_height  # Start on new row.
 
 
 
@@ -472,7 +489,7 @@ def menu():
     
 # Opens options
 def options():
-    run_options()
+    run_FAQ()
     
 # Exits function
 def exit():
@@ -487,7 +504,7 @@ def run_intro():
     
     # Making the buttons
     startButton = Button(WIDTH/2 - 100, HEIGHT*(1/3+2/10), 200, 50, start, "Start", font)
-    optionButton = Button(WIDTH/2 - 100, HEIGHT*(1/3 + 3/10), 200, 50, options, "Options", font)
+    optionButton = Button(WIDTH/2 - 100, HEIGHT*(1/3 + 3/10), 200, 50, options, "FAQ", font)
     exitButton = Button(WIDTH/2 - 100, HEIGHT*(1/3 + 4/10), 200, 50, exit, "Exit", font)
         
     while intro:
@@ -505,11 +522,21 @@ def run_intro():
         clock.tick(FPS)
         
 # to run the options page   
-def run_options():
+def run_FAQ():
     options = True
     
     # making buttons
-    menuButton = Button(20, 10, 100, 50, menu, "Menu", font, False)
+    menuButton = Button(20, 10, 140, 50, menu, "Menu", font)
+    
+    # main text
+    inst_title = pygame.font.SysFont('verdana', 100).render('FAQ', False, (250, 220, 210))
+
+    inst_text = "Welcome to Pong-Inertial, a fun pong-like game in a non-inertial, rotating reference frame!\n\n"\
+                "GAME: colour of the moving disk indicates who must hit it next. If you miss the disk, your opponent gets a point. Points are also given to the opponent if it wasn't your turn to hit it.\n\n"\
+                "HOW TO PLAY: Player 1 uses keys a and d to move. Player 2 uses the right and left arrows.\n\n"\
+                "POWER-UPS: If the game has gone on for a while, power ups will begin to appear as coloured arcs around the table. To collect it, simply move to it and give it a touch.\n\n"\
+                "TYPES OF POWER-UPS: Yellow power-ups increases the sides of your arc. Purple power-ups increase its speed."    
+    inst_font = pygame.font.SysFont('verdana', 20)
     
     while options:
         for event in pygame.event.get():
@@ -517,6 +544,9 @@ def run_options():
                 pygame.quit()
                 sys.exit()
         screen.fill(SURFACE_COLOR)
+        screen.blit(inst_title, (WIDTH/2 - inst_title.get_width()/2, HEIGHT*(1/10)))
+        blit_text(screen, inst_text, (15, 275), inst_font, (250, 200, 200))
+        # screen.blit(instructions, (WIDTH/2-instructions.get_width()/2, HEIGHT/2-instructions.get_height()/2))
         menuButton.process()
         pygame.display.flip()
         clock.tick(FPS)
@@ -547,7 +577,7 @@ def run_game():
     last_powerup_time = pygame.time.get_ticks()
     
     # making buttons
-    menuButton = Button(20, 10, 100, 50, leave_game, "Menu", font, False)
+    menuButton = Button(20, 10, 140, 50, leave_game, "Menu", font)
     
     text_time = 0
     text = None
@@ -624,8 +654,7 @@ def run_game():
             circles.draw(screen)
 
         if game_over:
-            menu()
-
+            leave_game() # same as menu(), but it changes music
                 
             
         # flip() the display to put your work on screen
